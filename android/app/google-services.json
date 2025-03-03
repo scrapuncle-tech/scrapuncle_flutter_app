@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "161775820792",
+    "project_id": "scrapuncle-b4fac",
+    "storage_bucket": "scrapuncle-b4fac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:161775820792:android:14498379119d25e00e800d",
+        "android_client_info": {
+          "package_name": "com.example.scrapuncle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7CPNn917-GJrfPO5dI1r5-GOtUW02fEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
