@@ -4,7 +4,7 @@ import 'package:scrapuncle/pages/add_item.dart';
 import 'package:scrapuncle/pages/profile.dart';
 import 'package:scrapuncle/service/database.dart';
 import 'package:scrapuncle/service/shared_pref.dart';
-import 'package:scrapuncle/pages/details.dart'; // Import the details page
+import 'package:scrapuncle/pages/details.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         itemsStream = stream;
       });
-    }); // Get the list of uploaded items
+    });
     setState(() {});
   }
 
@@ -72,7 +72,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              // Display the uploaded items using StreamBuilder
               StreamBuilder(
                 stream: itemsStream,
                 builder: (context, AsyncSnapshot snapshot) {
@@ -101,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 10.0),
                             decoration: BoxDecoration(
-                              color: Colors.green[100], // Green panel
+                              color: Colors.green[100],
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                             padding: const EdgeInsets.all(10.0),
@@ -115,8 +114,7 @@ class _HomePageState extends State<HomePage> {
                                 ),
                                 Text("Price: ${ds["Price"]}"),
                                 Text("Detail: ${ds["Detail"]}"),
-                                if (ds["Image"] !=
-                                    null) // Display image if available
+                                if (ds["Image"] != null)
                                   Image.network(
                                     ds["Image"],
                                     height: 100,

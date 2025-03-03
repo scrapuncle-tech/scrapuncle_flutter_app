@@ -37,10 +37,8 @@ class _AddItemState extends State<AddItem> {
           FirebaseStorage.instance.ref().child("itemImages").child(addId);
       final UploadTask task = firebaseStorageRef.putFile(selectedImage!);
 
-      // Wait for the upload to complete
       final TaskSnapshot snapshot = await task.whenComplete(() {});
 
-      // Get the download URL after the upload is complete
       var downloadUrl = await snapshot.ref.getDownloadURL();
 
       Map<String, dynamic> addItem = {
@@ -132,7 +130,7 @@ class _AddItemState extends State<AddItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
-                color: Colors.green[100], // Green panel
+                color: Colors.green[100],
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextField(
@@ -155,7 +153,7 @@ class _AddItemState extends State<AddItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
-                color: Colors.green[100], // Green panel
+                color: Colors.green[100],
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextField(
@@ -178,7 +176,7 @@ class _AddItemState extends State<AddItem> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               decoration: BoxDecoration(
-                color: Colors.green[100], // Green panel
+                color: Colors.green[100],
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextField(

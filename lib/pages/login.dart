@@ -26,7 +26,7 @@ class _LoginState extends State<Login> {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => BottomNav()));
       } on FirebaseAuthException catch (e) {
-        String errorMessage = "Login failed"; // Default error message
+        String errorMessage = "Login failed";
         if (e.code == 'user-not-found') {
           errorMessage = "No user found for that Email";
         } else if (e.code == 'wrong-password') {
@@ -55,7 +55,14 @@ class _LoginState extends State<Login> {
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Center(
+                child: Image.asset('images/ScrapUncle.png',
+                    height: 200, width: 300),
+              ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: userEmailController,
                 validator: (value) {

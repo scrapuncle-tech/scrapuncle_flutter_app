@@ -136,7 +136,7 @@ class _ProfileState extends State<Profile> {
               const SizedBox(height: 30),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.green[100], // Green panel
+                  color: Colors.green[100],
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 padding: const EdgeInsets.all(10.0),
@@ -169,7 +169,7 @@ class _ProfileState extends State<Profile> {
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.green[100], // Green panel
+                  color: Colors.green[100],
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 padding: const EdgeInsets.all(10.0),
@@ -202,7 +202,7 @@ class _ProfileState extends State<Profile> {
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.green[100], // Green panel
+                  color: Colors.green[100],
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 padding: const EdgeInsets.all(10.0),

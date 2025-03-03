@@ -26,7 +26,6 @@ class Details extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Item Image
             ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: Image.network(
@@ -38,7 +37,6 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Item Name
             Text(
               name,
               style: const TextStyle(
@@ -58,7 +56,6 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Item Detail (Description)
             Text(
               "Description:",
               style: const TextStyle(
@@ -72,7 +69,6 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Action Button (Customize as needed)
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -85,7 +81,6 @@ class Details extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  // Add your desired action here (e.g., contact seller, express interest)
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text("Action button pressed!"),

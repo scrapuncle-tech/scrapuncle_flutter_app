@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:scrapuncle/pages/home.dart';
+import 'package:scrapuncle/pages/profile.dart';
 
 class BottomNav extends StatefulWidget {
   const BottomNav({Key? key}) : super(key: key);
@@ -18,10 +19,7 @@ class _BottomNavState extends State<BottomNav> {
       'Messages',
       style: optionStyle,
     ),
-    Text(
-      'Profile',
-      style: optionStyle,
-    ),
+    Profile()
   ];
 
   void _onItemTapped(int index) {
