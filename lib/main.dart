@@ -20,11 +20,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SCRAPUNCLE',
       theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white, // Set white background
-        primaryColor: Colors.green, // Primary green color
+        scaffoldBackgroundColor: Colors.white,
+        primaryColor: Colors.green,
         colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.green),
       ),
-      home: const Login(), // Start with the Login page
+      home: const Login(),
     );
   }
 }
