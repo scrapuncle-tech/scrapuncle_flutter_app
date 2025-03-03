@@ -82,47 +82,31 @@ class _HomePageState extends State<HomePage> {
                       itemCount: snapshot.data.docs.length,
                       itemBuilder: (context, index) {
                         DocumentSnapshot ds = snapshot.data.docs[index];
-                        return GestureDetector(
-                          // Added GestureDetector
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Details(
-                                  name: ds["Name"],
-                                  image: ds["Image"],
-                                  price: ds["Price"],
-                                  detail: ds["Detail"],
-                                ),
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10.0),
+                          decoration: BoxDecoration(
+                            color: Colors.green[100],
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Name: ${ds["Name"]}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
                               ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10.0),
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Name: ${ds["Name"]}",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                              Text("Phone Number: ${ds["PhoneNumber"]}"),
+                              Text("Weight: ${ds["WeightOrQuantity"]}"),
+                              if (ds["Image"] != null)
+                                Image.network(
+                                  ds["Image"],
+                                  height: 100,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
                                 ),
-                                Text("Price: ${ds["Price"]}"),
-                                Text("Detail: ${ds["Detail"]}"),
-                                if (ds["Image"] != null)
-                                  Image.network(
-                                    ds["Image"],
-                                    height: 100,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                              ],
-                            ),
+                            ],
                           ),
                         );
                       },

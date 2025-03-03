@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 class Details extends StatelessWidget {
   final String name;
   final String image;
-  final String price;
-  final String detail;
+  final String phoneNumber;
+  final String weightOrQuantity;
 
   const Details({
     Key? key,
     required this.name,
     required this.image,
-    required this.price,
-    required this.detail,
+    required this.phoneNumber,
+    required this.weightOrQuantity,
   }) : super(key: key);
 
   @override
@@ -36,7 +36,6 @@ class Details extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-
             Text(
               name,
               style: const TextStyle(
@@ -45,30 +44,22 @@ class Details extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-
-            // Item Price
             Text(
-              "Price: $price",
+              "Phone Number: $phoneNumber",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 10),
-
             Text(
-              "Description:",
+              "Weight or Quantity: $weightOrQuantity",
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            Text(
-              detail,
-              style: const TextStyle(fontSize: 16),
-            ),
             const SizedBox(height: 30),
-
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(

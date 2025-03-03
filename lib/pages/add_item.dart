@@ -14,9 +14,9 @@ class AddItem extends StatefulWidget {
 }
 
 class _AddItemState extends State<AddItem> {
+  TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
-  TextEditingController priceController = TextEditingController();
-  TextEditingController detailController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
 
@@ -28,9 +28,10 @@ class _AddItemState extends State<AddItem> {
 
   uploadItem() async {
     if (selectedImage != null &&
+        phoneController.text != "" &&
         nameController.text != "" &&
-        priceController.text != "" &&
-        detailController.text != "") {
+        weightController.text != "") {
+      // Changed
       String addId = randomAlphaNumeric(10);
 
       Reference firebaseStorageRef =
@@ -43,9 +44,9 @@ class _AddItemState extends State<AddItem> {
 
       Map<String, dynamic> addItem = {
         "Image": downloadUrl,
+        "PhoneNumber": phoneController.text,
         "Name": nameController.text,
-        "Price": priceController.text,
-        "Detail": detailController.text
+        "WeightOrQuantity": weightController.text,
       };
       await DatabaseMethods().addItem(addItem).then((value) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -120,6 +121,29 @@ class _AddItemState extends State<AddItem> {
             ),
             const SizedBox(height: 30.0),
             const Text(
+              "Customer Phone Number",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10.0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                color: Colors.green[100],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Enter Customer Phone Number",
+                ),
+              ),
+            ),
+            const SizedBox(height: 30.0),
+            const Text(
               "Item Name",
               style: TextStyle(
                 fontSize: 18,
@@ -143,7 +167,7 @@ class _AddItemState extends State<AddItem> {
             ),
             const SizedBox(height: 30.0),
             const Text(
-              "Item Price",
+              "Item Weight or Quantity",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -157,34 +181,10 @@ class _AddItemState extends State<AddItem> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: TextField(
-                controller: priceController,
+                controller: weightController,
                 decoration: const InputDecoration(
                   border: InputBorder.none,
-                  hintText: "Enter Item Price",
-                ),
-              ),
-            ),
-            const SizedBox(height: 30.0),
-            const Text(
-              "Item Detail",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10.0),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              decoration: BoxDecoration(
-                color: Colors.green[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextField(
-                maxLines: 6,
-                controller: detailController,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Enter Item Detail",
+                  hintText: "Enter Item Weight or Quantity",
                 ),
               ),
             ),
