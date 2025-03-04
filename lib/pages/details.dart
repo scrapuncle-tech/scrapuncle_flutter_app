@@ -1,18 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Details extends StatelessWidget {
-  final String name;
-  final String image;
-  final String phoneNumber;
-  final String weightOrQuantity;
+  final Item item;
 
-  const Details({
-    Key? key,
-    required this.name,
-    required this.image,
-    required this.phoneNumber,
-    required this.weightOrQuantity,
-  }) : super(key: key);
+  const Details({Key? key, required this.item}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +21,7 @@ class Details extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: Image.network(
-                image,
+                item.image,
                 width: double.infinity,
                 height: 250,
                 fit: BoxFit.cover,
@@ -37,7 +29,7 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              name,
+              item.name,
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -45,7 +37,7 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              "Phone Number: $phoneNumber",
+              "Phone Number: ${item.phoneNumber}",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -53,7 +45,7 @@ class Details extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              "Weight or Quantity: $weightOrQuantity",
+              "Weight or Quantity: ${item.weightOrQuantity}",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
@@ -85,6 +77,29 @@ class Details extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class Item {
+  final String name;
+  final String image;
+  final String phoneNumber;
+  final String weightOrQuantity;
+
+  Item({
+    required this.name,
+    required this.image,
+    required this.phoneNumber,
+    required this.weightOrQuantity,
+  });
+
+  factory Item.fromDocumentSnapshot(DocumentSnapshot ds) {
+    return Item(
+      name: ds["Name"] ?? "",
+      image: ds["Image"] ?? "",
+      phoneNumber: ds["PhoneNumber"] ?? "",
+      weightOrQuantity: ds["WeightOrQuantity"] ?? "",
     );
   }
 }
