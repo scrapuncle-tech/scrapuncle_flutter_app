@@ -262,7 +262,7 @@ class _ProfileState extends State<Profile> {
                   ),
                 ),
                 onPressed: () {
-                  AuthMethods().SignOut();
+                  AuthMethods().SignOut(context);
                 },
                 icon: const Icon(Icons.logout, color: Colors.white),
                 label:
