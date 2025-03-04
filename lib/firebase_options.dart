@@ -41,48 +41,50 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD3TjI-BLQHUNaqrVG0YQoFiyta5rhMcVk',
-    appId: '1:161775820792:web:e059979c15a6b0870e800d',
-    messagingSenderId: '161775820792',
-    projectId: 'scrapuncle-b4fac',
-    authDomain: 'scrapuncle-b4fac.firebaseapp.com',
-    storageBucket: 'scrapuncle-b4fac.firebasestorage.app',
-    measurementId: 'G-CYVYCLWLKH',
+    apiKey: 'AIzaSyDpw4mRbco2poiPVnEGogO015qkbNX1THc',
+    appId: '1:894251245466:web:ddc00c3f451aa1cb592423',
+    messagingSenderId: '894251245466',
+    projectId: 'scrapuncle-452708',
+    authDomain: 'scrapuncle-452708.firebaseapp.com',
+    storageBucket: 'scrapuncle-452708.firebasestorage.app',
+    measurementId: 'G-4M2V2SQLFE',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD7CPNn917-GJrfPO5dI1r5-GOtUW02fEY',
-    appId: '1:161775820792:android:14498379119d25e00e800d',
-    messagingSenderId: '161775820792',
-    projectId: 'scrapuncle-b4fac',
-    storageBucket: 'scrapuncle-b4fac.firebasestorage.app',
+    apiKey: 'AIzaSyAosIjIIM_3BtnZtKXFvZi7xSfd5LVVAVA',
+    appId: '1:894251245466:android:83a828d2b38fb558592423',
+    messagingSenderId: '894251245466',
+    projectId: 'scrapuncle-452708',
+    storageBucket: 'scrapuncle-452708.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAV-FVyQlgyl7Jc--WHn6bOcJb8hcdJZks',
-    appId: '1:161775820792:ios:631e2247223d51910e800d',
-    messagingSenderId: '161775820792',
-    projectId: 'scrapuncle-b4fac',
-    storageBucket: 'scrapuncle-b4fac.firebasestorage.app',
+    apiKey: 'AIzaSyC08i2_UOl_svgUma2zRJIyjMLxhOSdx4g',
+    appId: '1:894251245466:ios:85b6ea0540271a33592423',
+    messagingSenderId: '894251245466',
+    projectId: 'scrapuncle-452708',
+    storageBucket: 'scrapuncle-452708.firebasestorage.app',
+    iosClientId: '894251245466-ua07im5qf9n3lk99ka9jsa7qb5325lss.apps.googleusercontent.com',
     iosBundleId: 'com.example.scrapuncle',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAV-FVyQlgyl7Jc--WHn6bOcJb8hcdJZks',
-    appId: '1:161775820792:ios:631e2247223d51910e800d',
-    messagingSenderId: '161775820792',
-    projectId: 'scrapuncle-b4fac',
-    storageBucket: 'scrapuncle-b4fac.firebasestorage.app',
+    apiKey: 'AIzaSyC08i2_UOl_svgUma2zRJIyjMLxhOSdx4g',
+    appId: '1:894251245466:ios:85b6ea0540271a33592423',
+    messagingSenderId: '894251245466',
+    projectId: 'scrapuncle-452708',
+    storageBucket: 'scrapuncle-452708.firebasestorage.app',
+    iosClientId: '894251245466-ua07im5qf9n3lk99ka9jsa7qb5325lss.apps.googleusercontent.com',
     iosBundleId: 'com.example.scrapuncle',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD3TjI-BLQHUNaqrVG0YQoFiyta5rhMcVk',
-    appId: '1:161775820792:web:76826ebd8f7501f10e800d',
-    messagingSenderId: '161775820792',
-    projectId: 'scrapuncle-b4fac',
-    authDomain: 'scrapuncle-b4fac.firebaseapp.com',
-    storageBucket: 'scrapuncle-b4fac.firebasestorage.app',
-    measurementId: 'G-6BELL98TTG',
+    apiKey: 'AIzaSyDpw4mRbco2poiPVnEGogO015qkbNX1THc',
+    appId: '1:894251245466:web:b8fdd231dd7ffde9592423',
+    messagingSenderId: '894251245466',
+    projectId: 'scrapuncle-452708',
+    authDomain: 'scrapuncle-452708.firebaseapp.com',
+    storageBucket: 'scrapuncle-452708.firebasestorage.app',
+    measurementId: 'G-4HJT864YYL',
   );
 }

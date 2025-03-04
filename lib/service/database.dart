@@ -18,7 +18,14 @@ class DatabaseMethods {
         .add(itemInfo);
   }
 
-  Future<Stream<QuerySnapshot>> getUploadedItems() async {
-    return FirebaseFirestore.instance.collection("items").snapshots();
+  Future<Stream<QuerySnapshot>> getUploadedItems(String userId) async {
+    print(
+        "DatabaseMethods: getUploadedItems called for userId: $userId"); // Add this line
+
+    return FirebaseFirestore.instance
+        .collection("users")
+        .doc(userId)
+        .collection("items")
+        .snapshots();
   }
 }

@@ -52,28 +52,28 @@ class Details extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-            Center(
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Action button pressed!"),
-                    ),
-                  );
-                },
-                child: const Text("Express Interest",
-                    style: TextStyle(color: Colors.white)),
-              ),
-            ),
+            // Center(
+            //   child: ElevatedButton(
+            //     style: ElevatedButton.styleFrom(
+            //       backgroundColor: Colors.green,
+            //       padding:
+            //           const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+            //       textStyle: const TextStyle(fontSize: 18),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(10.0),
+            //       ),
+            //     ),
+            //     onPressed: () {
+            //       ScaffoldMessenger.of(context).showSnackBar(
+            //         const SnackBar(
+            //           content: Text("Action button pressed!"),
+            //         ),
+            //       );
+            //     },
+            //     child: const Text("Express Interest",
+            //         style: TextStyle(color: Colors.white)),
+            //   ),
+            // ),
           ],
         ),
       ),

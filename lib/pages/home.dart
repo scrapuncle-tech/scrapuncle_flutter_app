@@ -15,10 +15,23 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? userName;
-  Stream? itemsStream;
+  String? userId; // Add user ID
+  Stream<QuerySnapshot>? itemsStream;
 
   getUserName() async {
     userName = await SharedPreferenceHelper().getUserName();
+    userId = await SharedPreferenceHelper().getUserId(); // Get user ID
+    print("HomePage: UserName = $userName, UserId = $userId"); // Add this line
+
+    setState(() {});
+    if (userId != null) {
+      DatabaseMethods().getUploadedItems(userId!).then((stream) {
+        // Pass User ID
+        setState(() {
+          itemsStream = stream;
+        });
+      });
+    }
     setState(() {});
   }
 
@@ -26,12 +39,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     getUserName();
-    DatabaseMethods().getUploadedItems().then((stream) {
-      setState(() {
-        itemsStream = stream;
-      });
-    });
-    setState(() {});
   }
 
   @override
@@ -72,41 +79,56 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              StreamBuilder(
+              StreamBuilder<QuerySnapshot>(
+                // Specify QuerySnapshot type
                 stream: itemsStream,
-                builder: (context, AsyncSnapshot snapshot) {
+                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                  // Specify QuerySnapshot type
                   if (snapshot.hasData) {
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data.docs.length,
+                      itemCount: snapshot.data!.docs.length, // Use null check
                       itemBuilder: (context, index) {
-                        DocumentSnapshot ds = snapshot.data.docs[index];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 10.0),
-                          decoration: BoxDecoration(
-                            color: Colors.green[100],
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          padding: const EdgeInsets.all(10.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Name: ${ds["Name"]}",
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
+                        DocumentSnapshot ds =
+                            snapshot.data!.docs[index]; // Use null check
+                        Item item =
+                            Item.fromDocumentSnapshot(ds); // Create Item object
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Details(item: item),
                               ),
-                              Text("Phone Number: ${ds["PhoneNumber"]}"),
-                              Text("Weight: ${ds["WeightOrQuantity"]}"),
-                              if (ds["Image"] != null)
-                                Image.network(
-                                  ds["Image"],
-                                  height: 100,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10.0),
+                            decoration: BoxDecoration(
+                              color: Colors.green[100],
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Name: ${item.name}",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
-                            ],
+                                Text("Phone Number: ${item.phoneNumber}"),
+                                Text("Weight: ${item.weightOrQuantity}"),
+                                if (item.image != null)
+                                  Image.network(
+                                    item.image,
+                                    height: 100,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                              ],
+                            ),
                           ),
                         );
                       },

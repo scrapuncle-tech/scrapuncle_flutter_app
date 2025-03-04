@@ -7,20 +7,37 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:161775820792:android:14498379119d25e00e800d",
+        "mobilesdk_app_id": "1:894251245466:android:83a828d2b38fb558592423",
         "android_client_info": {
           "package_name": "com.example.scrapuncle"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "894251245466-hc0lmpmijd07b72v62f3vde55a9hgmqo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyD7CPNn917-GJrfPO5dI1r5-GOtUW02fEY"
+          "current_key": "AIzaSyAosIjIIM_3BtnZtKXFvZi7xSfd5LVVAVA"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "894251245466-hc0lmpmijd07b72v62f3vde55a9hgmqo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "894251245466-ua07im5qf9n3lk99ka9jsa7qb5325lss.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.scrapuncle"
+              }
+            }
+          ]
         }
       }
     }
