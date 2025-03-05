@@ -86,6 +86,7 @@ class _AddItemState extends State<AddItem> {
         weightController.text.isNotEmpty &&
         userId != null) {
       String addId = randomAlphaNumeric(10);
+
       String fileName = '$userId/$addId';
 
       Reference firebaseStorageRef =
@@ -104,12 +105,6 @@ class _AddItemState extends State<AddItem> {
           "itemId": addId,
           "DateTime": currentTime,
         };
-
-        // Try to add item to Firebase
-        //Add item data to Firestore
-
-        // Add item data to Realtime Database
-        //await addDataToRealtimeDatabase(addItem);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

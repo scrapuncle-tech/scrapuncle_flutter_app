@@ -26,7 +26,7 @@ class _PickupPageState extends State<PickupPage> {
     setState(() {});
   }
 
-  Future<void> uploadItems() async {
+  Future<void> uploadItems(Map<String, dynamic> item) async {
     String phoneNumber = phoneController.text.trim(); // Trim whitespace
 
     if (phoneNumber.isEmpty) {
@@ -43,20 +43,18 @@ class _PickupPageState extends State<PickupPage> {
       return;
     }
 
-    // Upload all items to Firestore with the phone number
-    for (var item in items) {
-      try {
-        await DatabaseMethods().addItem(item, phoneNumber, userId!);
-        print(
-            "Uploaded item ${item['Name']} for phone number $phoneNumber"); // Log success
-      } catch (e) {
-        print(
-            "Error uploading item ${item['Name']} for phone number $phoneNumber: $e"); // Log failure
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error uploading item: $e")),
-        );
-        return; // Stop if any upload fails
-      }
+    // Upload the item to Firestore with the phone number
+    try {
+      await DatabaseMethods().addItem(item, phoneNumber, userId!);
+      print(
+          "Uploaded item ${item['Name']} for phone number $phoneNumber"); // Log success
+    } catch (e) {
+      print(
+          "Error uploading item ${item['Name']} for phone number $phoneNumber: $e"); // Log failure
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error uploading item: $e")),
+      );
+      return; // Stop if any upload fails
     }
 
     // After a successful upload, reset the items list
@@ -135,9 +133,7 @@ class _PickupPageState extends State<PickupPage> {
 
                 // If an item was added, update the items list
                 if (newItem != null) {
-                  setState(() {
-                    items.add(newItem);
-                  });
+                  uploadItems(newItem);
                 }
               },
               child:
@@ -152,34 +148,34 @@ class _PickupPageState extends State<PickupPage> {
               ),
             ),
             const SizedBox(height: 10.0),
-            if (items.isEmpty)
-              const Text("No items added yet.")
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10.0),
-                    padding: const EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      color: Colors.green[100],
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Name: ${item['Name']}"),
-                        Text("Weight: ${item['WeightOrQuantity']}"),
-                        Text("Date/Time: ${item['DateTime']}"),
-                        // Display other item details as needed
-                      ],
-                    ),
-                  );
-                },
-              ),
+            //if (items.isEmpty)
+            //  const Text("No items added yet.")
+            //else
+            //  ListView.builder(
+            //    shrinkWrap: true,
+            //    physics: const NeverScrollableScrollPhysics(),
+            //    itemCount: items.length,
+            //    itemBuilder: (context, index) {
+            //      final item = items[index];
+            //      return Container(
+            //        margin: const EdgeInsets.only(bottom: 10.0),
+            //        padding: const EdgeInsets.all(10.0),
+            //        decoration: BoxDecoration(
+            //          color: Colors.green[100],
+            //          borderRadius: BorderRadius.circular(10.0),
+            //        ),
+            //        child: Column(
+            //          crossAxisAlignment: CrossAxisAlignment.start,
+            //          children: [
+            //            Text("Name: ${item['Name']}"),
+            //            Text("Weight: ${item['WeightOrQuantity']}"),
+            //            Text("Date/Time: ${item['DateTime']}"),
+            //            // Display other item details as needed
+            //          ],
+            //        ),
+            //      );
+            //    },
+            //  ),
             const SizedBox(height: 30.0),
             Center(
               child: ElevatedButton(
@@ -194,7 +190,8 @@ class _PickupPageState extends State<PickupPage> {
                 ),
                 onPressed: () {
                   // Call the uploadItems method here
-                  uploadItems();
+                  //uploadItems();
+                  Navigator.pop(context);
                 },
                 child: const Text('Complete Pickup',
                     style: TextStyle(color: Colors.white)),

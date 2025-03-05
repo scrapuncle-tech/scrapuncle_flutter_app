@@ -8,7 +8,7 @@ class DatabaseMethods {
         .set(userInfoMap);
   }
 
-  // Add Item to Firestore under the user's document and phone number
+  // Add Item to Firestore under the user's document and WITH the phone number document
   Future addItem(
       Map<String, dynamic> itemInfo, String phoneNumber, String userId) async {
     // Ensure the phone number is valid
@@ -17,40 +17,20 @@ class DatabaseMethods {
       return null; // Or throw an exception
     }
 
-    // Construct the document path using the user's ID and phone number
+    // Construct the document path using the user's ID and DIRECTLY to the  phone number
     return await FirebaseFirestore.instance
         .collection("users") // Top-level collection for all users
         .doc(userId) // Document ID is the user's ID
         .collection("phoneNumbers")
         .doc(phoneNumber)
-        .collection("items")
-        .doc(itemInfo['itemId'])
         .set(itemInfo);
   }
 
-  // Get Items Uploaded under the specified phone number by the user
-  //Get Items Uploaded under the specified phone number by the user
-  Future<Stream<QuerySnapshot>> getUploadedItems(
-      String userId, String phoneNumber) async {
+  Future<Stream<QuerySnapshot>> getUploadedItems(String userId) async {
     return FirebaseFirestore.instance
         .collection("users")
         .doc(userId)
         .collection("phoneNumbers")
-        .doc(phoneNumber)
-        .collection("items")
         .snapshots();
   }
-
-  // Future<Stream<QuerySnapshot>> getUploadedItems(String userId) {
-  //   if (userId == null || userId.isEmpty) {
-  //     // Handle the case where userId is null or empty
-  //     return Future.value(Stream.empty()); // Return an empty stream
-  //   }
-
-  //   return FirebaseFirestore.instance
-  //       .collection('users')
-  //       .doc(userId)
-  //       .collection('phoneNumbers')
-  //       .snapshots();
-  // }
 }
