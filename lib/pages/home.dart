@@ -72,276 +72,161 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 10),
-              //StreamBuilder<QuerySnapshot>(
-              //    stream: FirebaseFirestore.instance
-              //        .collection('items')
-              //        .snapshots(),
-              //    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              //      if (snapshot.connectionState == ConnectionState.waiting) {
-              //        return const CircularProgressIndicator();
-              //      }
+              // Only proceed if userId is not null or empty
+              if (userId != null && userId!.isNotEmpty)
+                FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(userId)
+                      .get(),
+                  builder:
+                      (context, AsyncSnapshot<DocumentSnapshot> userSnapshot) {
+                    if (userSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
 
-              //      if (snapshot.hasError) {
-              //        return Text('Error: ${snapshot.error}');
-              //      }
+                    if (userSnapshot.hasError) {
+                      return Text('Error: ${userSnapshot.error}');
+                    }
 
-              //      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              //        return const Text('No items added yet.');
-              //      }
+                    if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
+                      return const Text('No data found for this user.');
+                    }
 
-              //phoneStreams.clear();
+                    // Build the UI to display the items
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userId)
+                              .collection("phoneNumbers")
+                              .snapshots(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasError) {
+                              return Text(
+                                  'Something went wrong: ${snapshot.error}');
+                            }
 
-              //      // Create a map to group items by phone number
-              //      Map<String, List<DocumentSnapshot>> groupedItems = {};
-              //      for (var doc in snapshot.data!.docs) {
-              //        String phoneNumber = doc.id;
-              //        if (!groupedItems.containsKey(phoneNumber)) {
-              //          groupedItems[phoneNumber] = [];
-              //        }
-              //        groupedItems[phoneNumber]!.add(doc);
-              //      }
-              //I tried implementing this as you said but it creates more issues
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Text("Loading");
+                            }
 
-              //return ListView.builder(
-              //  shrinkWrap: true,
-              //  physics: const NeverScrollableScrollPhysics(),
-              //  itemCount: groupedItems.length,
-              //  itemBuilder: (context, index) {
-              //    String phoneNumber = groupedItems.keys.elementAt(index);
-              //    List<DocumentSnapshot> itemsForNumber =
-              //        groupedItems[phoneNumber]!;
-              //    return ExpansionTile(
-              //      title: Text('Phone Number: $phoneNumber'),
-              //      children: itemsForNumber.map((doc) {
-              //        return FutureBuilder<QuerySnapshot>(
-              //            future: FirebaseFirestore.instance
-              //                .collection('items')
-              //                .doc(phoneNumber)
-              //                .collection('userItems')
-              //                .get(),
-              //            builder: (context,
-              //                AsyncSnapshot<QuerySnapshot> userItems) {
-              //              if (userItems.connectionState ==
-              //                  ConnectionState.waiting) {
-              //                return const CircularProgressIndicator();
-              //              }
+                            if (snapshot.data!.docs.isEmpty) {
+                              return const Text("No Items in here yet");
+                            }
 
-              //              if (userItems.hasError) {
-              //                return Text('Error: ${userItems.error}');
-              //              }
+                            return ListView(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              children: snapshot.data!.docs
+                                  .map((DocumentSnapshot phoneNumberDocument) {
+                                //Map<String, dynamic> data =
+                                //  document.data()! as Map<String, dynamic>;
+                                String phoneNumber = phoneNumberDocument.id;
+                                return ExpansionTile(
+                                  title: Text('Phone Number: $phoneNumber'),
+                                  children: [
+                                    StreamBuilder<QuerySnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(userId)
+                                          .collection("phoneNumbers")
+                                          .doc(phoneNumber)
+                                          .collection("items")
+                                          .snapshots(),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<QuerySnapshot> items) {
+                                        if (items.hasError) {
+                                          return Text(
+                                              'Something went wrong: ${items.error}');
+                                        }
 
-              //              if (!userItems.hasData ||
-              //                  userItems.data!.docs.isEmpty) {
-              //                return const Text('No items added yet.');
-              //              }
+                                        if (items.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return const Text("Loading");
+                                        }
 
-              //              return Column(
-              //                crossAxisAlignment:
-              //                    CrossAxisAlignment.start,
-              //                children: userItems.data!.docs.map((doc) {
-              //                  DocumentSnapshot ds = doc;
-              //                  Item item =
-              //                      Item.fromDocumentSnapshot(ds); // Create Item object
-              //                  return GestureDetector(
-              //                    onTap: () {
-              //                      Navigator.push(
-              //                        context,
-              //                        MaterialPageRoute(
-              //                          builder: (context) => Details(
-              //                              item:
-              //                                  item), // Fixed: Pass 'item'
-              //                        ),
-              //                      );
-              //                    },
-              //                    child: Container(
-              //                      margin: const EdgeInsets.only(
-              //                          bottom: 10.0),
-              //                      decoration: BoxDecoration(
-              //                        color: Colors.green[100],
-              //                        borderRadius:
-              //                            BorderRadius.circular(10.0),
-              //                      ),
-              //                      padding: const EdgeInsets.all(10.0),
-              //                      child: Column(
-              //                        crossAxisAlignment:
-              //                            CrossAxisAlignment.start,
-              //                        children: [
-              //                          Text(
-              //                            "Name: ${item.name}",
-              //                            style: const TextStyle(
-              //                                fontWeight:
-              //                                    FontWeight.bold),
-              //                          ),
-              //                          Text(
-              //                              "Phone Number: ${item.phoneNumber}"),
-              //                          Text(
-              //                              "Weight: ${item.weightOrQuantity}"),
-              //                          if (item.image != null)
-              //                            Image.network(
-              //                              item.image,
-              //                              height: 100,
-              //                              width: double.infinity,
-              //                              fit: BoxFit.cover,
-              //                            ),
-              //                        ],
-              //                      ),
-              //                    ),
-              //                  );
-              //                }).toList(),
-              //              );
-              //            });
-              //      }).toList(),
-              //    );
-              //  },
-              //);
-              //}),
-              FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(userId)
-                    .get(),
-                builder:
-                    (context, AsyncSnapshot<DocumentSnapshot> userSnapshot) {
-                  if (userSnapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
+                                        if (items.data!.docs.isEmpty) {
+                                          return const Text(
+                                              "No items added for this Phone Number yet");
+                                        }
 
-                  if (userSnapshot.hasError) {
-                    return Text('Error: ${userSnapshot.error}');
-                  }
-
-                  if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-                    return const Text('No data found for this user.');
-                  }
-
-                  // Build the UI to display the items
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(userId)
-                            .collection("phoneNumbers")
-                            .snapshots(),
-                        builder: (BuildContext context,
-                            AsyncSnapshot<QuerySnapshot> snapshot) {
-                          if (snapshot.hasError) {
-                            return Text(
-                                'Something went wrong: ${snapshot.error}');
-                          }
-
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Text("Loading");
-                          }
-
-                          if (snapshot.data!.docs.isEmpty) {
-                            return const Text("No Items in here yet");
-                          }
-
-                          return ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: snapshot.data!.docs
-                                .map((DocumentSnapshot document) {
-                              Map<String, dynamic> data =
-                                  document.data()! as Map<String, dynamic>;
-                              return ExpansionTile(
-                                title: Text('Phone Number: ${document.id}'),
-                                children: [
-                                  StreamBuilder<QuerySnapshot>(
-                                    stream: FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(userId)
-                                        .collection("phoneNumbers")
-                                        .doc(document.id)
-                                        .collection("items")
-                                        .snapshots(),
-                                    builder: (BuildContext context,
-                                        AsyncSnapshot<QuerySnapshot> items) {
-                                      if (items.hasError) {
-                                        return Text(
-                                            'Something went wrong: ${items.error}');
-                                      }
-
-                                      if (items.connectionState ==
-                                          ConnectionState.waiting) {
-                                        return const Text("Loading");
-                                      }
-
-                                      if (items.data!.docs.isEmpty) {
-                                        return const Text(
-                                            "No items added for this Phone Number yet");
-                                      }
-
-                                      return Column(
-                                        children: items.data!.docs
-                                            .map((DocumentSnapshot document) {
-                                          Map<String, dynamic> itemData =
-                                              document.data()!
-                                                  as Map<String, dynamic>;
-                                          Item item = Item.fromDocumentSnapshot(
-                                              document); // Create Item object
-                                          return GestureDetector(
-                                            onTap: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      Details(item: item),
-                                                ),
-                                              );
-                                            },
-                                            child: Container(
-                                              margin: const EdgeInsets.only(
-                                                  bottom: 10.0),
-                                              decoration: BoxDecoration(
-                                                color: Colors.green[100],
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                              ),
-                                              padding:
-                                                  const EdgeInsets.all(10.0),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "Name: ${item.name}",
-                                                    style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold),
+                                        return Column(
+                                          children: items.data!.docs.map(
+                                              (DocumentSnapshot itemDocument) {
+                                            Map<String, dynamic> itemData =
+                                                itemDocument.data()!
+                                                    as Map<String, dynamic>;
+                                            Item item = Item.fromDocumentSnapshot(
+                                                itemDocument); // Create Item object
+                                            return GestureDetector(
+                                              onTap: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Details(item: item),
                                                   ),
-                                                  Text(
-                                                      "Phone Number: ${item.phoneNumber}"),
-                                                  Text(
-                                                      "Weight: ${item.weightOrQuantity}"),
-                                                  if (item.image != null)
-                                                    Image.network(
-                                                      item.image,
-                                                      height: 100,
-                                                      width: double.infinity,
-                                                      fit: BoxFit.cover,
+                                                );
+                                              },
+                                              child: Container(
+                                                margin: const EdgeInsets.only(
+                                                    bottom: 10.0),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.green[100],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10.0),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.all(10.0),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "Name: ${item.name}",
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold),
                                                     ),
-                                                ],
+                                                    Text(
+                                                        "Phone Number: ${item.phoneNumber}"),
+                                                    Text(
+                                                        "Weight: ${item.weightOrQuantity}"),
+                                                    if (item.image != null)
+                                                      Image.network(
+                                                        item.image,
+                                                        height: 100,
+                                                        width: double.infinity,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              );
-                            }).toList(),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
-              )
+                                            );
+                                          }).toList(),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                )
+              else
+                const Text(
+                    "User ID not found. Please log in again."), // Fallback message
             ],
           ),
         ),
