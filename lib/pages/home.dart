@@ -16,22 +16,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? userName;
-  String? userId; // Add user ID
-  //Stream<QuerySnapshot>? itemsStream;
-  Map<String, Stream<QuerySnapshot>> phoneStreams = {};
-
-  getUserName() async {
-    userName = await SharedPreferenceHelper().getUserName();
-    userId = await SharedPreferenceHelper().getUserId(); // Get user ID
-    print("HomePage: UserName = $userName, UserId = $userId"); // Add this line
-
-    setState(() {});
-  }
+  String? userId;
 
   @override
   void initState() {
     super.initState();
     getUserName();
+  }
+
+  getUserName() async {
+    userName = await SharedPreferenceHelper().getUserName();
+    userId = await SharedPreferenceHelper().getUserId();
+    print("HomePage: UserName = $userName, UserId = $userId");
+    setState(() {});
   }
 
   @override
@@ -51,184 +48,129 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Hello $userName!",
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Hello $userName!",
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 20),
-              const Text(
-                "Uploaded Items",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Uploaded Items",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
-              const SizedBox(height: 10),
-              // Only proceed if userId is not null or empty
-              if (userId != null && userId!.isNotEmpty)
-                FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(userId)
-                      .get(),
-                  builder:
-                      (context, AsyncSnapshot<DocumentSnapshot> userSnapshot) {
-                    if (userSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
-                    }
+            ),
+            const SizedBox(height: 10),
+            if (userId != null && userId!.isNotEmpty)
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(userId)
+                    .collection("phoneNumbers")
+                    .snapshots(),
+                builder: (context,
+                    AsyncSnapshot<QuerySnapshot> phoneNumbersSnapshot) {
+                  if (phoneNumbersSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
 
-                    if (userSnapshot.hasError) {
-                      return Text('Error: ${userSnapshot.error}');
-                    }
+                  if (phoneNumbersSnapshot.hasError) {
+                    return Text('Error: ${phoneNumbersSnapshot.error}');
+                  }
 
-                    if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-                      return const Text('No data found for this user.');
-                    }
+                  if (!phoneNumbersSnapshot.hasData ||
+                      phoneNumbersSnapshot.data!.docs.isEmpty) {
+                    return const Text('No items added yet.');
+                  }
 
-                    // Build the UI to display the items
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(userId)
-                              .collection("phoneNumbers")
-                              .snapshots(),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<QuerySnapshot> snapshot) {
-                            if (snapshot.hasError) {
-                              return Text(
-                                  'Something went wrong: ${snapshot.error}');
-                            }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: phoneNumbersSnapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      String phoneNumber =
+                          phoneNumbersSnapshot.data!.docs[index].id;
+                      return ExpansionTile(
+                        title: Text('Phone Number: $phoneNumber'),
+                        children: [
+                          StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userId)
+                                .collection('phoneNumbers')
+                                .doc(phoneNumber)
+                                .collection('items')
+                                .snapshots(),
+                            builder: (context,
+                                AsyncSnapshot<QuerySnapshot> itemsSnapshot) {
+                              if (itemsSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
 
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Text("Loading");
-                            }
+                              if (itemsSnapshot.hasError) {
+                                return Text('Error: ${itemsSnapshot.error}');
+                              }
 
-                            if (snapshot.data!.docs.isEmpty) {
-                              return const Text("No Items in here yet");
-                            }
+                              if (!itemsSnapshot.hasData ||
+                                  itemsSnapshot.data!.docs.isEmpty) {
+                                return const Text(
+                                    'No items added for this phone number yet.');
+                              }
 
-                            return ListView(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: snapshot.data!.docs
-                                  .map((DocumentSnapshot phoneNumberDocument) {
-                                //Map<String, dynamic> data =
-                                //  document.data()! as Map<String, dynamic>;
-                                String phoneNumber = phoneNumberDocument.id;
-                                return ExpansionTile(
-                                  title: Text('Phone Number: $phoneNumber'),
-                                  children: [
-                                    StreamBuilder<QuerySnapshot>(
-                                      stream: FirebaseFirestore.instance
-                                          .collection('users')
-                                          .doc(userId)
-                                          .collection("phoneNumbers")
-                                          .doc(phoneNumber)
-                                          .collection("items")
-                                          .snapshots(),
-                                      builder: (BuildContext context,
-                                          AsyncSnapshot<QuerySnapshot> items) {
-                                        if (items.hasError) {
-                                          return Text(
-                                              'Something went wrong: ${items.error}');
-                                        }
+                              return Column(
+                                children: itemsSnapshot.data!.docs
+                                    .map((DocumentSnapshot itemDoc) {
+                                  Map<String, dynamic> itemData =
+                                      itemDoc.data() as Map<String, dynamic>;
 
-                                        if (items.connectionState ==
-                                            ConnectionState.waiting) {
-                                          return const Text("Loading");
-                                        }
-
-                                        if (items.data!.docs.isEmpty) {
-                                          return const Text(
-                                              "No items added for this Phone Number yet");
-                                        }
-
-                                        return Column(
-                                          children: items.data!.docs.map(
-                                              (DocumentSnapshot itemDocument) {
-                                            Map<String, dynamic> itemData =
-                                                itemDocument.data()!
-                                                    as Map<String, dynamic>;
-                                            Item item = Item.fromDocumentSnapshot(
-                                                itemDocument); // Create Item object
-                                            return GestureDetector(
-                                              onTap: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        Details(item: item),
-                                                  ),
-                                                );
-                                              },
-                                              child: Container(
-                                                margin: const EdgeInsets.only(
-                                                    bottom: 10.0),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.green[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.all(10.0),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "Name: ${item.name}",
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold),
-                                                    ),
-                                                    Text(
-                                                        "Phone Number: ${item.phoneNumber}"),
-                                                    Text(
-                                                        "Weight: ${item.weightOrQuantity}"),
-                                                    if (item.image != null)
-                                                      Image.network(
-                                                        item.image,
-                                                        height: 100,
-                                                        width: double.infinity,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          }).toList(),
-                                        );
-                                      },
+                                  // Extract item details and pass to Details page
+                                  Item item = Item(
+                                    name: itemData['Name'] ?? 'N/A',
+                                    image: itemData['Image'] ?? '',
+                                    phoneNumber:
+                                        itemData['PhoneNumber'] ?? 'N/A',
+                                    weightOrQuantity:
+                                        itemData['WeightOrQuantity'] ?? 'N/A',
+                                  );
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              Details(item: item),
+                                        ),
+                                      );
+                                    },
+                                    child: ListTile(
+                                      title:
+                                          Text(itemData['Name'] ?? 'Item Name'),
+                                      subtitle: Text(
+                                          'Weight: ${itemData['WeightOrQuantity'] ?? 'N/A'}, Date: ${itemData['DateTime'] ?? 'N/A'}'),
                                     ),
-                                  ],
-                                );
-                              }).toList(),
-                            );
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                )
-              else
-                const Text(
-                    "User ID not found. Please log in again."), // Fallback message
-            ],
-          ),
+                                  );
+                                }).toList(),
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              )
+            else
+              const Text("User ID not found. Please log in again."),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

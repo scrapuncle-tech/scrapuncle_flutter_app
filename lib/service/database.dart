@@ -30,11 +30,27 @@ class DatabaseMethods {
 
   // Get Items Uploaded under the specified phone number by the user
   //Get Items Uploaded under the specified phone number by the user
-  Future<Stream<QuerySnapshot>> getUploadedItems(String userId) async {
+  Future<Stream<QuerySnapshot>> getUploadedItems(
+      String userId, String phoneNumber) async {
     return FirebaseFirestore.instance
         .collection("users")
         .doc(userId)
         .collection("phoneNumbers")
+        .doc(phoneNumber)
+        .collection("items")
         .snapshots();
   }
+
+  // Future<Stream<QuerySnapshot>> getUploadedItems(String userId) {
+  //   if (userId == null || userId.isEmpty) {
+  //     // Handle the case where userId is null or empty
+  //     return Future.value(Stream.empty()); // Return an empty stream
+  //   }
+
+  //   return FirebaseFirestore.instance
+  //       .collection('users')
+  //       .doc(userId)
+  //       .collection('phoneNumbers')
+  //       .snapshots();
+  // }
 }

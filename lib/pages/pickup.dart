@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:scrapuncle/pages/add_item.dart';
 import 'package:scrapuncle/service/database.dart'; // Import DatabaseMethods
+import 'package:scrapuncle/service/shared_pref.dart';
 
 class PickupPage extends StatefulWidget {
   const PickupPage({Key? key}) : super(key: key);
@@ -12,9 +13,21 @@ class PickupPage extends StatefulWidget {
 class _PickupPageState extends State<PickupPage> {
   TextEditingController phoneController = TextEditingController();
   List<Map<String, dynamic>> items = []; // List to store added items
+  String? userId;
+
+  @override
+  void initState() {
+    super.initState();
+    getUserId();
+  }
+
+  Future<void> getUserId() async {
+    userId = await SharedPreferenceHelper().getUserId();
+    setState(() {});
+  }
 
   Future<void> uploadItems() async {
-    String phoneNumber = phoneController.text;
+    String phoneNumber = phoneController.text.trim(); // Trim whitespace
 
     if (phoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -23,10 +36,17 @@ class _PickupPageState extends State<PickupPage> {
       return;
     }
 
+    if (userId == null || userId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User ID not found. Please login again.")),
+      );
+      return;
+    }
+
     // Upload all items to Firestore with the phone number
     for (var item in items) {
       try {
-        await DatabaseMethods().addItem(item, phoneNumber, item['userId']);
+        await DatabaseMethods().addItem(item, phoneNumber, userId!);
         print(
             "Uploaded item ${item['Name']} for phone number $phoneNumber"); // Log success
       } catch (e) {
@@ -95,13 +115,20 @@ class _PickupPageState extends State<PickupPage> {
                 ),
               ),
               onPressed: () async {
+                String phoneNumber = phoneController.text.trim();
+                if (phoneNumber.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("Please enter a phone number.")),
+                  );
+                  return;
+                }
                 // Navigate to AddItem page and wait for the result
                 final newItem = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => AddItem(
-                      phoneNumber:
-                          phoneController.text, // Pass the phone number
+                      phoneNumber: phoneNumber, // Pass the phone number
                     ),
                   ),
                 );
