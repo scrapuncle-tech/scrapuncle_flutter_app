@@ -25,9 +25,32 @@ class _HomePageState extends State<HomePage> {
   }
 
   getUserName() async {
-    userName = await SharedPreferenceHelper().getUserName();
     userId = await SharedPreferenceHelper().getUserId();
     print("HomePage: UserName = $userName, UserId = $userId");
+    if (userId != null && userId!.isNotEmpty) {
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get()
+          .then((DocumentSnapshot documentSnapshot) {
+        if (documentSnapshot.exists) {
+          setState(() {
+            userName = documentSnapshot['Name'] ??
+                'Username Not Found'; // Extract userName from doc
+          });
+        } else {
+          print('Document does not exist on the database');
+          setState(() {
+            userName = 'Username Not Found';
+          });
+        }
+      });
+    } else {
+      setState(() {
+        userName = 'Please Login';
+      });
+    }
+
     setState(() {});
   }
 
@@ -68,6 +91,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 10),
+            // Only proceed if userId is not null or empty
             if (userId != null && userId!.isNotEmpty)
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -96,71 +120,19 @@ class _HomePageState extends State<HomePage> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: phoneNumbersSnapshot.data!.docs.length,
                     itemBuilder: (context, index) {
-                      String phoneNumber =
-                          phoneNumbersSnapshot.data!.docs[index].id;
+                      final phoneNumberDocument =
+                          phoneNumbersSnapshot.data!.docs[index];
+                      final itemData =
+                          phoneNumberDocument.data() as Map<String, dynamic>;
+                      // String phoneNumber = phoneNumbersSnapshot.data!.docs[index].id;
                       return ExpansionTile(
-                        title: Text('Phone Number: $phoneNumber'),
+                        title: Text(
+                            'Phone Number: ${itemData['PhoneNumber'] ?? 'N/A'}'),
                         children: [
-                          StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(userId)
-                                .collection('phoneNumbers')
-                                .doc(phoneNumber)
-                                .collection('items')
-                                .snapshots(),
-                            builder: (context,
-                                AsyncSnapshot<QuerySnapshot> itemsSnapshot) {
-                              if (itemsSnapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-
-                              if (itemsSnapshot.hasError) {
-                                return Text('Error: ${itemsSnapshot.error}');
-                              }
-
-                              if (!itemsSnapshot.hasData ||
-                                  itemsSnapshot.data!.docs.isEmpty) {
-                                return const Text(
-                                    'No items added for this phone number yet.');
-                              }
-
-                              return Column(
-                                children: itemsSnapshot.data!.docs
-                                    .map((DocumentSnapshot itemDoc) {
-                                  Map<String, dynamic> itemData =
-                                      itemDoc.data() as Map<String, dynamic>;
-
-                                  // Extract item details and pass to Details page
-                                  Item item = Item(
-                                    name: itemData['Name'] ?? 'N/A',
-                                    image: itemData['Image'] ?? '',
-                                    phoneNumber:
-                                        itemData['PhoneNumber'] ?? 'N/A',
-                                    weightOrQuantity:
-                                        itemData['WeightOrQuantity'] ?? 'N/A',
-                                  );
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              Details(item: item),
-                                        ),
-                                      );
-                                    },
-                                    child: ListTile(
-                                      title:
-                                          Text(itemData['Name'] ?? 'Item Name'),
-                                      subtitle: Text(
-                                          'Weight: ${itemData['WeightOrQuantity'] ?? 'N/A'}, Date: ${itemData['DateTime'] ?? 'N/A'}'),
-                                    ),
-                                  );
-                                }).toList(),
-                              );
-                            },
+                          ListTile(
+                            title: Text(itemData['Name'] ?? 'N/A'),
+                            subtitle: Text(
+                                'Weight: ${itemData['WeightOrQuantity'] ?? 'N/A'}, Date: ${itemData['DateTime'] ?? 'N/A'}'),
                           ),
                         ],
                       );

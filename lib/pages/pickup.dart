@@ -26,7 +26,7 @@ class _PickupPageState extends State<PickupPage> {
     setState(() {});
   }
 
-  Future<void> uploadItems(Map<String, dynamic> item) async {
+  Future<void> uploadItem(Map<String, dynamic> item) async {
     String phoneNumber = phoneController.text.trim(); // Trim whitespace
 
     if (phoneNumber.isEmpty) {
@@ -48,6 +48,8 @@ class _PickupPageState extends State<PickupPage> {
       await DatabaseMethods().addItem(item, phoneNumber, userId!);
       print(
           "Uploaded item ${item['Name']} for phone number $phoneNumber"); // Log success
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Added Successfully")));
     } catch (e) {
       print(
           "Error uploading item ${item['Name']} for phone number $phoneNumber: $e"); // Log failure
@@ -56,15 +58,6 @@ class _PickupPageState extends State<PickupPage> {
       );
       return; // Stop if any upload fails
     }
-
-    // After a successful upload, reset the items list
-    setState(() {
-      items.clear();
-    });
-    Navigator.pop(context); // Return to HomePage
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Items uploaded successfully!")),
-    );
   }
 
   @override
@@ -133,49 +126,12 @@ class _PickupPageState extends State<PickupPage> {
 
                 // If an item was added, update the items list
                 if (newItem != null) {
-                  uploadItems(newItem);
+                  uploadItem(newItem);
                 }
               },
               child:
                   const Text('Add Item', style: TextStyle(color: Colors.white)),
             ),
-            const SizedBox(height: 20.0),
-            const Text(
-              "Added Items",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10.0),
-            //if (items.isEmpty)
-            //  const Text("No items added yet.")
-            //else
-            //  ListView.builder(
-            //    shrinkWrap: true,
-            //    physics: const NeverScrollableScrollPhysics(),
-            //    itemCount: items.length,
-            //    itemBuilder: (context, index) {
-            //      final item = items[index];
-            //      return Container(
-            //        margin: const EdgeInsets.only(bottom: 10.0),
-            //        padding: const EdgeInsets.all(10.0),
-            //        decoration: BoxDecoration(
-            //          color: Colors.green[100],
-            //          borderRadius: BorderRadius.circular(10.0),
-            //        ),
-            //        child: Column(
-            //          crossAxisAlignment: CrossAxisAlignment.start,
-            //          children: [
-            //            Text("Name: ${item['Name']}"),
-            //            Text("Weight: ${item['WeightOrQuantity']}"),
-            //            Text("Date/Time: ${item['DateTime']}"),
-            //            // Display other item details as needed
-            //          ],
-            //        ),
-            //      );
-            //    },
-            //  ),
             const SizedBox(height: 30.0),
             Center(
               child: ElevatedButton(
