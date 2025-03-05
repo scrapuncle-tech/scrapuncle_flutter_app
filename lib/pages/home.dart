@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:scrapuncle/pages/add_item.dart';
+import 'package:scrapuncle/pages/pickup.dart';
 import 'package:scrapuncle/pages/profile.dart';
 import 'package:scrapuncle/service/database.dart';
 import 'package:scrapuncle/service/shared_pref.dart';
@@ -16,22 +17,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? userName;
   String? userId; // Add user ID
-  Stream<QuerySnapshot>? itemsStream;
+  //Stream<QuerySnapshot>? itemsStream;
+  Map<String, Stream<QuerySnapshot>> phoneStreams = {};
 
   getUserName() async {
     userName = await SharedPreferenceHelper().getUserName();
     userId = await SharedPreferenceHelper().getUserId(); // Get user ID
     print("HomePage: UserName = $userName, UserId = $userId"); // Add this line
 
-    setState(() {});
-    if (userId != null) {
-      DatabaseMethods().getUploadedItems(userId!).then((stream) {
-        // Pass User ID
-        setState(() {
-          itemsStream = stream;
-        });
-      });
-    }
     setState(() {});
   }
 
@@ -80,66 +73,127 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 10),
               StreamBuilder<QuerySnapshot>(
-                // Specify QuerySnapshot type
-                stream: itemsStream,
-                builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  // Specify QuerySnapshot type
-                  if (snapshot.hasData) {
+                  stream: FirebaseFirestore.instance
+                      .collection('items')
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Text('No items added yet.');
+                    }
+
+                    //phoneStreams.clear();
+
+                    // Create a map to group items by phone number
+                    Map<String, List<DocumentSnapshot>> groupedItems = {};
+                    for (var doc in snapshot.data!.docs) {
+                      String phoneNumber = doc.id;
+                      if (!groupedItems.containsKey(phoneNumber)) {
+                        groupedItems[phoneNumber] = [];
+                      }
+                      groupedItems[phoneNumber]!.add(doc);
+                    }
+
                     return ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: snapshot.data!.docs.length, // Use null check
+                      itemCount: groupedItems.length,
                       itemBuilder: (context, index) {
-                        DocumentSnapshot ds =
-                            snapshot.data!.docs[index]; // Use null check
-                        Item item =
-                            Item.fromDocumentSnapshot(ds); // Create Item object
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Details(item: item),
-                              ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10.0),
-                            decoration: BoxDecoration(
-                              color: Colors.green[100],
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            padding: const EdgeInsets.all(10.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Name: ${item.name}",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                Text("Phone Number: ${item.phoneNumber}"),
-                                Text("Weight: ${item.weightOrQuantity}"),
-                                if (item.image != null)
-                                  Image.network(
-                                    item.image,
-                                    height: 100,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                              ],
-                            ),
-                          ),
+                        String phoneNumber = groupedItems.keys.elementAt(index);
+                        List<DocumentSnapshot> itemsForNumber =
+                            groupedItems[phoneNumber]!;
+                        return ExpansionTile(
+                          title: Text('Phone Number: $phoneNumber'),
+                          children: itemsForNumber.map((doc) {
+                            return FutureBuilder<QuerySnapshot>(
+                                future: FirebaseFirestore.instance
+                                    .collection('items')
+                                    .doc(phoneNumber)
+                                    .collection('userItems')
+                                    .get(),
+                                builder: (context,
+                                    AsyncSnapshot<QuerySnapshot> userItems) {
+                                  if (userItems.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  }
+
+                                  if (userItems.hasError) {
+                                    return Text('Error: ${userItems.error}');
+                                  }
+
+                                  if (!userItems.hasData ||
+                                      userItems.data!.docs.isEmpty) {
+                                    return const Text('No items added yet.');
+                                  }
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: userItems.data!.docs.map((doc) {
+                                      DocumentSnapshot ds = doc;
+                                      Item item = Item.fromDocumentSnapshot(
+                                          ds); // Create Item object
+                                      return GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => Details(
+                                                  item:
+                                                      item), // Fixed: Pass 'item'
+                                            ),
+                                          );
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(
+                                              bottom: 10.0),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green[100],
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                          ),
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Name: ${item.name}",
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              Text(
+                                                  "Phone Number: ${item.phoneNumber}"),
+                                              Text(
+                                                  "Weight: ${item.weightOrQuantity}"),
+                                              if (item.image != null)
+                                                Image.network(
+                                                  item.image,
+                                                  height: 100,
+                                                  width: double.infinity,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                });
+                          }).toList(),
                         );
                       },
                     );
-                  } else if (snapshot.hasError) {
-                    return Text("Error: ${snapshot.error}");
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
-              ),
+                  }),
             ],
           ),
         ),
@@ -147,10 +201,10 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const AddItem()));
+              MaterialPageRoute(builder: (context) => const PickupPage()));
         },
         backgroundColor: Colors.green,
-        child: const Icon(Icons.add),
+        child: const Text("Pickup", style: TextStyle(color: Colors.black)),
       ),
     );
   }

@@ -9,26 +9,44 @@ import 'package:scrapuncle/service/database.dart';
 import 'package:scrapuncle/service/shared_pref.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:path_provider/path_provider.dart'; // Import for local storage
+import 'package:intl/intl.dart'; // For date formatting
 
 class AddItem extends StatefulWidget {
-  const AddItem({Key? key}) : super(key: key);
+  final String phoneNumber; // Receive phone number from PickupPage
+
+  const AddItem({Key? key, required this.phoneNumber}) : super(key: key);
 
   @override
   State<AddItem> createState() => _AddItemState();
 }
 
 class _AddItemState extends State<AddItem> {
-  TextEditingController phoneController = TextEditingController();
   TextEditingController nameController = TextEditingController();
   TextEditingController weightController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   File? selectedImage;
   String? userId;
+  String currentTime = ""; // Store the real-time date and time
 
   @override
   void initState() {
     super.initState();
     getUserId();
+    // Set the initial time
+    currentTime = DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.now());
+
+    // Update the time every minute
+    Future.delayed(Duration.zero, () async {
+      while (mounted) {
+        await Future.delayed(const Duration(minutes: 1));
+        if (mounted) {
+          setState(() {
+            currentTime =
+                DateFormat('yyyy-MM-dd – kk:mm').format(DateTime.now());
+          });
+        }
+      }
+    });
   }
 
   Future<void> getUserId() async {
@@ -46,7 +64,6 @@ class _AddItemState extends State<AddItem> {
 
   Future<void> uploadItem() async {
     if (selectedImage != null &&
-        phoneController.text.isNotEmpty &&
         nameController.text.isNotEmpty &&
         weightController.text.isNotEmpty &&
         userId != null) {
@@ -62,36 +79,27 @@ class _AddItemState extends State<AddItem> {
 
         Map<String, dynamic> addItem = {
           "Image": downloadUrl,
-          "PhoneNumber": phoneController.text,
+          "PhoneNumber": widget.phoneNumber, // Use passed phone number
           "Name": nameController.text,
           "WeightOrQuantity": weightController.text,
           "userId": userId,
           "itemId": addId,
+          "DateTime": currentTime,
         };
 
         // Try to add item to Firebase
-        try {
-          // Add item data to Firestore
-          await DatabaseMethods().addItem(addItem, userId!);
+        //Add item data to Firestore
 
-          // Add item data to Realtime Database
-          await addDataToRealtimeDatabase(addItem);
+        // Add item data to Realtime Database
+        //await addDataToRealtimeDatabase(addItem);
 
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              backgroundColor: Colors.green,
-              content: Text(
-                "Item has been added Successfully",
-                style: TextStyle(fontSize: 18.0, color: Colors.white),
-              )));
-
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const HomePage()));
-        } catch (firestoreError) {
-          // If adding to Firebase fails, store locally
-          print(
-              "Failed to upload to Firestore/Realtime DB: $firestoreError. Storing locally.");
-          await storeItemLocally(addItem);
-        }
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text(
+              "Item has been added Successfully",
+              style: TextStyle(fontSize: 18.0, color: Colors.white),
+            )));
+        Navigator.pop(context, addItem);
       } catch (e) {
         print("Error uploading item: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -144,51 +152,6 @@ class _AddItemState extends State<AddItem> {
     }
   }
 
-  // Function to store item data locally as JSON
-  Future<void> storeItemLocally(Map<String, dynamic> itemData) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/pending_items.json');
-
-      // Read existing data, if any
-      List<dynamic> existingItems = [];
-      if (await file.exists()) {
-        String contents = await file.readAsString();
-        if (contents.isNotEmpty) {
-          existingItems = jsonDecode(contents);
-        }
-      }
-
-      // Add the new item to the list
-      existingItems.add(itemData);
-
-      // Write the updated list back to the file
-      await file.writeAsString(jsonEncode(existingItems));
-
-      print('Item stored locally for later upload.');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          backgroundColor: Colors.yellow,
-          content: Text(
-            "Item stored locally. Will be uploaded when online.",
-            style: TextStyle(fontSize: 18.0, color: Colors.black),
-          ),
-        ),
-      );
-    } catch (e) {
-      print("Error storing item locally: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text(
-            "Failed to store item locally: $e",
-            style: const TextStyle(fontSize: 18.0, color: Colors.white),
-          ),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -201,6 +164,48 @@ class _AddItemState extends State<AddItem> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            //const Text(
+            //  "Customer Phone Number",
+            //  style: TextStyle(
+            //    fontSize: 18,
+            //    fontWeight: FontWeight.bold,
+            //  ),
+            //),
+            //const SizedBox(height: 10.0),
+            //Container(
+            //  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            //  decoration: BoxDecoration(
+            //    color: Colors.green[100],
+            //    borderRadius: BorderRadius.circular(10),
+            //  ),
+            //  child: TextField(
+            //    controller: phoneController,
+            //    decoration: const InputDecoration(
+            //      border: InputBorder.none,
+            //      hintText: "Enter Customer Phone Number",
+            //    ),
+            //  ),
+            //),
+            const Text(
+              "Realtime Time/Date",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10.0),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              decoration: BoxDecoration(
+                color: Colors.green[100],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                currentTime,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 30.0),
             const Text(
               "Upload the Item Picture",
               style: TextStyle(
@@ -237,29 +242,6 @@ class _AddItemState extends State<AddItem> {
                             ),
                           ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 30.0),
-            const Text(
-              "Customer Phone Number",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10.0),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              decoration: BoxDecoration(
-                color: Colors.green[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "Enter Customer Phone Number",
                 ),
               ),
             ),
