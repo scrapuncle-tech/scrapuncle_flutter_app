@@ -26,25 +26,24 @@ class _HomePageState extends State<HomePage> {
 
   getUserName() async {
     userId = await SharedPreferenceHelper().getUserId();
-    print("HomePage: UserName = $userName, UserId = $userId");
+
     if (userId != null && userId!.isNotEmpty) {
-      FirebaseFirestore.instance
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
-          .get()
-          .then((DocumentSnapshot documentSnapshot) {
-        if (documentSnapshot.exists) {
-          setState(() {
-            userName = documentSnapshot['Name'] ??
-                'Username Not Found'; // Extract userName from doc
-          });
-        } else {
-          print('Document does not exist on the database');
-          setState(() {
-            userName = 'Username Not Found';
-          });
-        }
-      });
+          .get();
+
+      if (userDoc.exists) {
+        setState(() {
+          userName = userDoc['Name'] ??
+              'Username Not Found'; // Extract userName from doc
+        });
+      } else {
+        print('Document does not exist on the database');
+        setState(() {
+          userName = 'Username Not Found';
+        });
+      }
     } else {
       setState(() {
         userName = 'Please Login';
@@ -91,7 +90,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 10),
-            // Only proceed if userId is not null or empty
             if (userId != null && userId!.isNotEmpty)
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
