@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? userName;
   String? userId; // Add user ID
-  //Stream<QuerySnapshot>? itemsStream;
+  Stream<QuerySnapshot>? itemsStream;
   Map<String, Stream<QuerySnapshot>> phoneStreams = {};
 
   getUserName() async {
@@ -25,6 +25,15 @@ class _HomePageState extends State<HomePage> {
     userId = await SharedPreferenceHelper().getUserId(); // Get user ID
     print("HomePage: UserName = $userName, UserId = $userId"); // Add this line
 
+    setState(() {});
+    if (userId != null) {
+      DatabaseMethods().getUploadedItems(userId!).then((stream) {
+        // Pass User ID
+        setState(() {
+          itemsStream = stream;
+        });
+      });
+    }
     setState(() {});
   }
 
