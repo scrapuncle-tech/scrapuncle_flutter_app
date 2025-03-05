@@ -1,8 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Import FirebaseFirestore
 import 'package:scrapuncle/pages/bottom_nav.dart';
 import 'package:scrapuncle/pages/signup.dart';
-import 'package:scrapuncle/widget/widget_support.dart';
+import 'package:scrapuncle/service/shared_pref.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -12,11 +13,10 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  String email = "", password = "";
   TextEditingController userEmailController = TextEditingController();
   TextEditingController userPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isLoading = false; // Add a loading indicator
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -28,18 +28,42 @@ class _LoginState extends State<Login> {
   userLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Start loading
+        _isLoading = true;
       });
       try {
-        await FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: email, password: password);
+        UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+                email: userEmailController.text,
+                password: userPasswordController.text);
 
-        // Check if the widget is still mounted before navigating
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => BottomNav()),
-          );
+        // Retrieve user data from Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .get();
+
+        if (userDoc.exists) {
+          // Extract data and store in Shared Preferences
+          await SharedPreferenceHelper().saveUserName(userDoc['Name'] ?? '');
+          await SharedPreferenceHelper()
+              .saveUserPhoneNumber(userDoc['PhoneNumber'] ?? '');
+          await SharedPreferenceHelper().saveUserEmail(userDoc['Email'] ?? '');
+          await SharedPreferenceHelper().saveUserId(userCredential.user!.uid);
+          print('User data saved to SharedPreferences');
+
+          // Navigate to BottomNav after successful login
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const BottomNav()),
+            );
+          }
+        } else {
+          print('User data not found in Firestore');
+          // Handle the case where user data doesn't exist.
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('User data not found. Please contact support.'),
+          ));
         }
       } on FirebaseAuthException catch (e) {
         String errorMessage = "Login failed";
@@ -48,8 +72,6 @@ class _LoginState extends State<Login> {
         } else if (e.code == 'wrong-password') {
           errorMessage = "Wrong Password provided by User";
         }
-
-        // Check if the widget is still mounted before showing the snackbar
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             backgroundColor: Colors.red,
@@ -59,11 +81,19 @@ class _LoginState extends State<Login> {
             ),
           ));
         }
+      } catch (e) {
+        print("Error during login: $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Colors.red,
+            content: Text(
+                "An unexpected error occurred during login. Please try again."),
+          ));
+        }
       } finally {
-        // Ensure loading is stopped even on error
         if (mounted) {
           setState(() {
-            _isLoading = false; // Stop loading
+            _isLoading = false;
           });
         }
       }
@@ -79,7 +109,7 @@ class _LoginState extends State<Login> {
       ),
       body: _isLoading
           ? const Center(
-              child: CircularProgressIndicator(), // Show loading indicator
+              child: CircularProgressIndicator(),
             )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(20.0),
@@ -144,10 +174,7 @@ class _LoginState extends State<Login> {
                       ),
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          setState(() {
-                            email = userEmailController.text;
-                            password = userPasswordController.text;
-                          });
+                          userLogin();
                           userLogin();
                         }
                       },

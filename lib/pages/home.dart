@@ -21,35 +21,44 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getUserName();
+    loadUserData(); // Use a combined function to load user data
   }
 
-  getUserName() async {
-    userId = await SharedPreferenceHelper().getUserId();
+  Future<void> loadUserData() async {
+    userId = await SharedPreferenceHelper().getUserId(); // get userId
+    print("HomePage: UserId = $userId");
 
     if (userId != null && userId!.isNotEmpty) {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .get();
+      try {
+        userName = await SharedPreferenceHelper()
+            .getUserName(); // Get userName from Shared Preferences
+        print("HomePage: UserName from SharedPref = $userName");
 
-      if (userDoc.exists) {
-        setState(() {
-          userName = userDoc['Name'] ??
-              'Username Not Found'; // Extract userName from doc
-        });
-      } else {
-        print('Document does not exist on the database');
-        setState(() {
-          userName = 'Username Not Found';
-        });
+        if (userName == null || userName!.isEmpty) {
+          // If userName is not available in SharedPref Get User Info from Firestore
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userId)
+              .get();
+
+          if (userDoc.exists) {
+            userName = userDoc['Name'] as String?;
+            await SharedPreferenceHelper().saveUserName(
+                userName ?? ''); // Save userName back to SharedPref
+
+            print("HomePage: UserName from Firestore = $userName");
+          } else {
+            print("User document not found in Firestore");
+            userName = 'Username Not Found';
+          }
+        }
+      } catch (e) {
+        print("Error getting user data: $e");
+        userName = 'Error Loading User'; //handle to data
       }
     } else {
-      setState(() {
-        userName = 'Please Login';
-      });
+      userName = 'Please Login'; //If userid is not valid show error to the user
     }
-
     setState(() {});
   }
 
@@ -90,6 +99,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 10),
+            // Only proceed if userId is valid
             if (userId != null && userId!.isNotEmpty)
               StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
