@@ -18,10 +18,13 @@ class _HomePageState extends State<HomePage> {
   String? userName;
   String? userId;
 
+  Map<String, dynamic>? userPhoneNumbersAndItems;
+
   @override
   void initState() {
     super.initState();
     loadUserData(); // Use a combined function to load user data
+    loadPhoneNumbersAndItems(); // Load phone numbers and items
   }
 
   Future<void> loadUserData() async {
@@ -62,8 +65,16 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  Future<void> loadPhoneNumbersAndItems() async {
+    userPhoneNumbersAndItems =
+        await SharedPreferenceHelper().getUserPhoneNumbersAndItems();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Display the retrieved phone numbers and items
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("SCRAPUNCLE"),
@@ -91,65 +102,22 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              "Uploaded Items",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Only proceed if userId is valid
-            if (userId != null && userId!.isNotEmpty)
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(userId)
-                    .collection("phoneNumbers")
-                    .snapshots(),
-                builder: (context,
-                    AsyncSnapshot<QuerySnapshot> phoneNumbersSnapshot) {
-                  if (phoneNumbersSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-
-                  if (phoneNumbersSnapshot.hasError) {
-                    return Text('Error: ${phoneNumbersSnapshot.error}');
-                  }
-
-                  if (!phoneNumbersSnapshot.hasData ||
-                      phoneNumbersSnapshot.data!.docs.isEmpty) {
-                    return const Text('No items added yet.');
-                  }
-
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: phoneNumbersSnapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final phoneNumberDocument =
-                          phoneNumbersSnapshot.data!.docs[index];
-                      final itemData =
-                          phoneNumberDocument.data() as Map<String, dynamic>;
-                      // String phoneNumber = phoneNumbersSnapshot.data!.docs[index].id;
-                      return ExpansionTile(
-                        title: Text(
-                            'Phone Number: ${itemData['PhoneNumber'] ?? 'N/A'}'),
-                        children: [
-                          ListTile(
-                            title: Text(itemData['Name'] ?? 'N/A'),
-                            subtitle: Text(
-                                'Weight: ${itemData['WeightOrQuantity'] ?? 'N/A'}, Date: ${itemData['DateTime'] ?? 'N/A'}'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              )
-            else
-              const Text("User ID not found. Please log in again."),
+            if (userPhoneNumbersAndItems != null) ...[
+              for (var entry in userPhoneNumbersAndItems!.entries)
+                ExpansionTile(
+                  title: Text('Phone Number: ${entry.key}'),
+                  children: [
+                    for (var item in entry.value)
+                      ListTile(
+                        title: Text(item['Name'] ?? 'N/A'),
+                        subtitle: Text(
+                            'Weight: ${item['WeightOrQuantity'] ?? 'N/A'}, Date: ${item['DateTime'] ?? 'N/A'}'),
+                      ),
+                  ],
+                ),
+            ] else
+              const Text('No items added yet.'),
+            // Removed the StreamBuilder as we are now using data from shared preferences
           ],
         ),
       ),
